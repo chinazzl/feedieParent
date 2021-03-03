@@ -1,0 +1,6 @@
+# Project exclude paths
+/feed-dev-api/target/
+/feed-dev-common/target/
+/feed-dev-mapper/target/
+/feed-dev-pojo/target/
+/feed-dev-service/target/
