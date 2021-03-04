@@ -42,7 +42,7 @@ public class PassportController {
         return IMOOCJSONResult.ok();
     }
 
-    /**
+    /** 步骤
      * 1. 判断用户名称和密码不能为空
      * 2. 密码长度不能少于6位
      * 3. 判断两次密码输入是否一致
