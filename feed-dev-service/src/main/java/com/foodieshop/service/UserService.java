@@ -1,6 +1,7 @@
 package com.foodieshop.service;
 
 import com.foodieshop.bo.UserBo;
+import com.foodieshop.pojo.Users;
 
 /**
  * @Author: zhang zhao lin
@@ -17,5 +18,7 @@ public interface UserService {
      */
     boolean isRegisteredUser(String userName);
 
-    void insertUser(UserBo userBo);
+    Users insertUser(UserBo userBo);
+
+    Users loginUser(UserBo userBo);
 }
