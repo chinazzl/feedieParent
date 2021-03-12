@@ -20,7 +20,6 @@ public class UserBo {
     @Length(min = 6,message = "最小长度不能小于6")
     private String password;
 
-    @NotNull(message = "录入密码不允许为空")
     private String confirmPassword;
 
     public String getUsername() {

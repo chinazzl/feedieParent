@@ -1,9 +1,6 @@
 package com.imooc.exception;
 
 import com.imooc.utils.IMOOCJSONResult;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLNonTransientException;
-import org.apache.catalina.User;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
