@@ -1,17 +1,88 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.foodieshop.mapper.CategoryMapper" >
-  <resultMap id="BaseResultMap" type="com.foodieshop.pojo.Category" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="INTEGER" />
-    <result column="father_id" property="fatherId" jdbcType="INTEGER" />
-    <result column="logo" property="logo" jdbcType="VARCHAR" />
-    <result column="slogan" property="slogan" jdbcType="VARCHAR" />
-    <result column="cat_image" property="catImage" jdbcType="VARCHAR" />
-    <result column="bg_color" property="bgColor" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="com.foodieshop.mapper.CategoryMapper">
+    <!--<resultMap id="BaseResultMap" type="com.foodieshop.pojo.Category" >
+      &lt;!&ndash;
+        WARNING - @mbg.generated
+      &ndash;&gt;
+      <id column="id" property="id" jdbcType="INTEGER" />
+      <result column="name" property="name" jdbcType="VARCHAR" />
+      <result column="type" property="type" jdbcType="INTEGER" />
+      <result column="father_id" property="fatherId" jdbcType="INTEGER" />
+      <result column="logo" property="logo" jdbcType="VARCHAR" />
+      <result column="slogan" property="slogan" jdbcType="VARCHAR" />
+      <result column="cat_image" property="catImage" jdbcType="VARCHAR" />
+      <result column="bg_color" property="bgColor" jdbcType="VARCHAR" />
+    </resultMap>-->
+
+    <resultMap id="myCategory" type="com.foodieshop.vo.CategoryVo">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="fatherId" property="fatherId" jdbcType="INTEGER"/>
+        <collection property="subCatList" ofType="com.foodieshop.vo.SubCategoryVo">
+            <id column="subId" property="subId" jdbcType="INTEGER"/>
+            <result column="subName" property="subName" jdbcType="VARCHAR"/>
+            <result column="subType" property="subType" jdbcType="INTEGER"/>
+            <result column="subFatherId" property="subFatherId" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+    <select id="querySubCategoriesByRootId" parameterType="int" resultMap="myCategory">
+    SELECT
+        f.id as id,
+        f.name as name,
+        f.type as type,
+        f.father_id as fatherId,
+        c.id as subId,
+        c.name as subName,
+        c.type as subType,
+        c.father_id as subFatherId
+    FROM
+        category f
+    LEFT JOIN
+        category c
+    on
+        f.id = c.father_id
+    WHERE
+        f.father_id = #{pid}
+  </select>
+
+    <!--    根据父级id 查询最新六个商品信息-->
+    <resultMap id="sixNewItems" type="com.foodieshop.vo.SubCateItemVo">
+        <id column="rootCatId" property="rootCatId" jdbcType="INTEGER"/>
+        <result column="slogan" property="slogan" jdbcType="VARCHAR"/>
+        <result column="rootCatName" property="rootCatName" jdbcType="VARCHAR"/>
+        <result column="catImage" property="catImage" jdbcType="VARCHAR"/>
+        <result column="bgColor" property="bgColor" jdbcType="VARCHAR"/>
+        <collection property="simpleItemList" ofType="com.foodieshop.vo.SixNewItem">
+            <id column="itemId" property="itemId" jdbcType="VARCHAR"/>
+            <result column="itemName" property="itemName" jdbcType="VARCHAR"/>
+            <result column="itemUrl" property="itemUrl" jdbcType="VARCHAR"/>
+            <result column="createdTime" property="createdTime" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    <select id="getSubCateItemsByRootId" parameterType="map" resultMap="sixNewItems">
+        SELECT
+            F.id AS rootCatId,
+            F.NAME AS rootCatName,
+            F.slogan AS slogan,
+            F.bg_color AS bgColor,
+            F.cat_image AS catImage,
+            itemTable.item_name AS itemName,
+            itemTable.id AS itemId,
+            itemImage.url AS itemUrl,
+            itemTable.created_time AS createdTime
+        FROM
+            category F
+            LEFT JOIN items itemTable ON F.id = itemTable.root_cat_id
+            LEFT JOIN items_img itemImage ON itemTable.id = itemImage.item_id
+        WHERE
+            f.type = 1
+            AND itemTable.root_cat_id = #{paraMap.catRootId}
+            AND itemImage.is_main = 1
+        ORDER BY
+            itemTable.created_time DESC
+            LIMIT 0,6;
+    </select>
+
 </mapper>
