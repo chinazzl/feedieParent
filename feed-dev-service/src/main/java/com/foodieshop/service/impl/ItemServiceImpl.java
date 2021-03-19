@@ -1,19 +1,22 @@
 package com.foodieshop.service.impl;
 
-import com.foodieshop.mapper.ItemsImgMapper;
-import com.foodieshop.mapper.ItemsMapper;
-import com.foodieshop.mapper.ItemsParamMapper;
-import com.foodieshop.mapper.ItemsSpecMapper;
-import com.foodieshop.pojo.Items;
-import com.foodieshop.pojo.ItemsImg;
-import com.foodieshop.pojo.ItemsParam;
-import com.foodieshop.pojo.ItemsSpec;
+import com.foodieshop.mapper.*;
+import com.foodieshop.pojo.*;
 import com.foodieshop.service.ItemService;
+import com.foodieshop.vo.CommentRecord;
+import com.foodieshop.vo.ItemLevelCommentVo;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.imooc.enums.CommentLevel;
+import com.imooc.utils.DesensitizationUtil;
+import com.imooc.utils.PagedGridResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: zhang zhao lin
@@ -36,6 +39,9 @@ public class ItemServiceImpl implements ItemService {
     @Autowired
     private ItemsParamMapper itemsParamMapper;
 
+    @Autowired
+    private ItemsCommentsMapper itemCommentsMapper;
+
     /**
      * 查询商品
      *
@@ -45,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
     public Items queryItemsById(String itemId) {
         Example example = new Example(Items.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("id",itemId);
+        criteria.andEqualTo("id", itemId);
         return itemsMapper.selectOneByExample(example);
     }
 
@@ -58,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemsImg> queryItemImgList(String itemId) {
         Example example = new Example(ItemsImg.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
         return itemsImgMapper.selectByExample(example);
 
     }
@@ -72,7 +78,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemsSpec> queryItemsSpecList(String itemId) {
         Example example = new Example(ItemsSpec.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
         return itemsSpecMapper.selectByExample(example);
     }
 
@@ -85,7 +91,79 @@ public class ItemServiceImpl implements ItemService {
     public ItemsParam queryItemParam(String itemId) {
         Example example = new Example(ItemsParam.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
         return itemsParamMapper.selectOneByExample(example);
+    }
+
+    /**
+     * 根据商品Id 进行查询商品的评价
+     *
+     * @param itemId 商品id
+     */
+    @Override
+    public ItemLevelCommentVo queryCommentsByLevel(String itemId) {
+        // 获取好评数量
+        ItemLevelCommentVo levelCommentVo = new ItemLevelCommentVo();
+        Integer goodComment = getCommentCount(itemId, CommentLevel.GOOD.type);
+        Integer normalComment = getCommentCount(itemId, CommentLevel.NORMAL.type);
+        Integer badComment = getCommentCount(itemId, CommentLevel.BAD.type);
+        Integer totalComment = goodComment + normalComment + badComment;
+        levelCommentVo.setTotalCounts(totalComment);
+        levelCommentVo.setBadCounts(badComment);
+        levelCommentVo.setGoodCounts(goodComment);
+        levelCommentVo.setNormalCounts(normalComment);
+
+        return levelCommentVo;
+    }
+
+    /**
+     * 根据商品ID 查询 商品评价
+     *
+     * @param itemId
+     * @param page
+     * @param pageSize
+     */
+    @Override
+    public PagedGridResult queryItemCommentsByItemId(String itemId, Integer level, Integer page, Integer pageSize) {
+        Map<String,Object> paramMap = new HashMap<>();
+        PageHelper.startPage(page,pageSize);
+        paramMap.put("itemId",itemId);
+        paramMap.put("level",level);
+        List<CommentRecord> list = itemCommentsMapper.queryCommentsByItemId(paramMap);
+        for (CommentRecord commentRecord : list) {
+            if (commentRecord.getNickName()!= null) {
+                String nickName = DesensitizationUtil.commonDisplay(commentRecord.getNickName());
+                commentRecord.setNickName(nickName);
+            }
+        }
+        return getCommentPaged(list, page);
+    }
+
+    private PagedGridResult getCommentPaged(List<?> list,Integer page) {
+        PageInfo pageInfo = new PageInfo<>(list);
+        PagedGridResult pagedGridResult = new PagedGridResult();
+        pagedGridResult.setPage(page);
+        pagedGridResult.setRows(list);
+        //设置总页数
+        pagedGridResult.setTotal(pageInfo.getPages());
+        //设置总记录数
+        pagedGridResult.setRecords(pageInfo.getTotal());
+        return pagedGridResult;
+    }
+
+
+    /**
+     * 动态获取评价数量
+     * @param itemId 商品id
+     * @param level 1 好评 2 默认 3 差评
+     * @return
+     */
+    private Integer getCommentCount(String itemId, Integer level) {
+        ItemsComments itemsComments = new ItemsComments();
+        itemsComments.setItemId(itemId);
+        if (level != null) {
+            itemsComments.setCommentLevel(level);
+        }
+        return itemCommentsMapper.selectCount(itemsComments);
     }
 }
