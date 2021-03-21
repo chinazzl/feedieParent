@@ -5,6 +5,7 @@ import com.foodieshop.pojo.*;
 import com.foodieshop.service.ItemService;
 import com.foodieshop.vo.CommentRecord;
 import com.foodieshop.vo.ItemLevelCommentVo;
+import com.foodieshop.vo.SearchItemVo;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.imooc.enums.CommentLevel;
@@ -12,6 +13,8 @@ import com.imooc.utils.DesensitizationUtil;
 import com.imooc.utils.PagedGridResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.HashMap;
@@ -125,13 +128,13 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public PagedGridResult queryItemCommentsByItemId(String itemId, Integer level, Integer page, Integer pageSize) {
-        Map<String,Object> paramMap = new HashMap<>();
-        PageHelper.startPage(page,pageSize);
-        paramMap.put("itemId",itemId);
-        paramMap.put("level",level);
+        Map<String, Object> paramMap = new HashMap<>();
+        PageHelper.startPage(page, pageSize);
+        paramMap.put("itemId", itemId);
+        paramMap.put("level", level);
         List<CommentRecord> list = itemCommentsMapper.queryCommentsByItemId(paramMap);
         for (CommentRecord commentRecord : list) {
-            if (commentRecord.getNickName()!= null) {
+            if (commentRecord.getNickName() != null) {
                 String nickName = DesensitizationUtil.commonDisplay(commentRecord.getNickName());
                 commentRecord.setNickName(nickName);
             }
@@ -139,7 +142,29 @@ public class ItemServiceImpl implements ItemService {
         return getCommentPaged(list, page);
     }
 
-    private PagedGridResult getCommentPaged(List<?> list,Integer page) {
+    /**
+     * 根据 商品名称模糊查询 商品信息并分页处理
+     *
+     * @param itemName
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return com.imooc.utils.PagedGridResult
+     * @author zhang zhao lin
+     * @date 2021/3/21 13:51
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult queryItemInfoByItemName(String itemName, String sort, Integer page, Integer pageSize) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemName", itemName);
+        params.put("sort", sort);
+        PageHelper.startPage(page, pageSize);
+        List<SearchItemVo> list = itemsMapper.queryItemsByItemName(params);
+        return getCommentPaged(list, page);
+    }
+
+    private PagedGridResult getCommentPaged(List<?> list, Integer page) {
         PageInfo pageInfo = new PageInfo<>(list);
         PagedGridResult pagedGridResult = new PagedGridResult();
         pagedGridResult.setPage(page);
@@ -154,8 +179,9 @@ public class ItemServiceImpl implements ItemService {
 
     /**
      * 动态获取评价数量
+     *
      * @param itemId 商品id
-     * @param level 1 好评 2 默认 3 差评
+     * @param level  1 好评 2 默认 3 差评
      * @return
      */
     private Integer getCommentCount(String itemId, Integer level) {

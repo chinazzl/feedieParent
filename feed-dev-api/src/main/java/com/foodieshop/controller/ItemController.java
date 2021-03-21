@@ -95,4 +95,29 @@ public class ItemController extends BaseController {
         return IMOOCJSONResult.ok(commentRecords);
     }
 
+    /**
+     * 查询 商品各个等级的评论信息
+     *
+     * @param itemName   商品名称
+     * @param page     当前页
+     * @param pageSize 每页显示条数
+     * @return
+     */
+    @RequestMapping("/search")
+    public IMOOCJSONResult searchItemInfos(@RequestParam("keywords") String itemName, @RequestParam("sort") String sort,
+                                           @RequestParam("page") Integer page,
+                                           @RequestParam("pageSize") Integer pageSize) {
+        if (itemName == null) {
+            return IMOOCJSONResult.errorMsg("商品名称不能为空");
+        }
+        if (pageSize == null) {
+            pageSize = PAGE_DEFAULT_SIZE;
+        }
+        if (page == null) {
+            page = PAGE_DEFAULT;
+        }
+        PagedGridResult commentRecords = itemService.queryItemInfoByItemName(itemName, sort, page, pageSize);
+        return IMOOCJSONResult.ok(commentRecords);
+    }
+
 }

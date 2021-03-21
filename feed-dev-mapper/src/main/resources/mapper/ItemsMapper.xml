@@ -1,18 +1,51 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.foodieshop.mapper.ItemsMapper" >
-  <resultMap id="BaseResultMap" type="com.foodieshop.pojo.Items" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="VARCHAR" />
+<mapper namespace="com.foodieshop.mapper.ItemsMapper">
+    <!--<resultMap id="BaseResultMap" type="com.foodieshop.pojo.Items">
+
+  <id column="id" property="id" jdbcType="VARCHAR" />
     <result column="item_name" property="itemName" jdbcType="VARCHAR" />
     <result column="cat_id" property="catId" jdbcType="INTEGER" />
     <result column="root_cat_id" property="rootCatId" jdbcType="INTEGER" />
     <result column="sell_counts" property="sellCounts" jdbcType="INTEGER" />
     <result column="on_off_status" property="onOffStatus" jdbcType="INTEGER" />
-    <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
+    <result column="created_time" property="createdTime" jdbcType=  "TIMESTAMP" />
     <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
     <result column="content" property="content" jdbcType="LONGVARCHAR" />
-  </resultMap>
+  </resultMap>-->
+
+    <!--  商品搜索详情-->
+    <select id="queryItemsByItemName" parameterType="map" resultType="com.foodieshop.vo.SearchItemVo">
+        SELECT
+            item.id AS itemId,
+            item.item_name AS itemName,
+            item.sell_counts AS sellCounts,
+            itemImg.url AS imgUrl,
+            temp.discount AS price
+        FROM items item
+            LEFT JOIN items_img itemImg ON item.id = itemImg.item_id
+            LEFT JOIN ( SELECT SPEC.ITEM_ID, min( spec.price_discount ) AS discount
+                            FROM items_spec SPEC GROUP BY SPEC.ITEM_ID ) temp
+            ON TEMP.ITEM_ID = itemImg.item_id
+            WHERE
+                itemImg.is_main = 1
+                <if test="paramsMap.itemName != null and paramsMap.itemName != ''">
+                    AND item.item_name like '%${paramsMap.itemName}%'
+                </if>
+                /*c: 商品销量优先 降序
+                p: 价格优先 降序
+                k: 默认排序*/
+                ORDER BY
+                <choose>
+                    <when test="paramsMap.sort == &quot;c&quot;">
+                          item.sell_counts desc
+                    </when>
+                    <when test="paramsMap.sort == &quot;p&quot;">
+                        temp.discount desc
+                    </when>
+                    <otherwise>
+                        item.item_name asc
+                    </otherwise>
+                </choose>
+    </select>
 </mapper>

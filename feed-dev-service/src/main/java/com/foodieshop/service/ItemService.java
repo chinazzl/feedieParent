@@ -48,4 +48,16 @@ public interface ItemService {
      * 根据商品ID 查询 商品评价
      */
     PagedGridResult queryItemCommentsByItemId(String itemId, Integer level, Integer page, Integer pageSize);
+
+    /**
+     * 根据 商品名称模糊查询 商品信息并分页处理
+     * @author zhang zhao lin
+     * @date 2021/3/21 13:51
+     * @param itemName
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return com.imooc.utils.PagedGridResult
+     */
+    PagedGridResult queryItemInfoByItemName(String itemName,String sort,Integer page,Integer pageSize);
 }
