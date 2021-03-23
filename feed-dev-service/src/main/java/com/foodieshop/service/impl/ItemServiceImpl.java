@@ -6,6 +6,7 @@ import com.foodieshop.service.ItemService;
 import com.foodieshop.vo.CommentRecord;
 import com.foodieshop.vo.ItemLevelCommentVo;
 import com.foodieshop.vo.SearchItemVo;
+import com.foodieshop.vo.ShopCartItemVo;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.imooc.enums.CommentLevel;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,6 +164,22 @@ public class ItemServiceImpl implements ItemService {
         PageHelper.startPage(page, pageSize);
         List<SearchItemVo> list = itemsMapper.queryItemsByItemName(params);
         return getCommentPaged(list, page);
+    }
+
+    /**
+     * 根据cookie中的 规格id，刷新购物车中的规格信息
+     *
+     * @param specIds
+     * @return java.util.List<com.foodieshop.vo.ShopCartItemVo>
+     * @author zhang zhao lin
+     * @date 2021/3/23 22:40
+     */
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public List<ShopCartItemVo> queryShopCartItemBySpecId(String specIds) {
+        String[] specId = specIds.split(",");
+        List<String> specIdList = Arrays.asList(specId);
+        return itemsSpecMapper.queryShopCartItemBySpecId(specIdList);
     }
 
     private PagedGridResult getCommentPaged(List<?> list, Integer page) {

@@ -4,8 +4,8 @@ import com.foodieshop.pojo.Items;
 import com.foodieshop.pojo.ItemsImg;
 import com.foodieshop.pojo.ItemsParam;
 import com.foodieshop.pojo.ItemsSpec;
-import com.foodieshop.vo.CommentRecord;
 import com.foodieshop.vo.ItemLevelCommentVo;
+import com.foodieshop.vo.ShopCartItemVo;
 import com.imooc.utils.PagedGridResult;
 
 import java.util.List;
@@ -47,6 +47,7 @@ public interface ItemService {
     /**
      * 根据商品ID 查询 商品评价
      */
+
     PagedGridResult queryItemCommentsByItemId(String itemId, Integer level, Integer page, Integer pageSize);
 
     /**
@@ -60,4 +61,13 @@ public interface ItemService {
      * @return com.imooc.utils.PagedGridResult
      */
     PagedGridResult queryItemInfoByItemName(String itemName,String sort,Integer page,Integer pageSize);
+
+    /**
+     * 根据cookie中的 规格id，刷新购物车中的规格信息
+     * @author zhang zhao lin
+     * @date 2021/3/23 22:40
+     * @param specIds
+     * @return java.util.List<com.foodieshop.vo.ShopCartItemVo>
+     */
+    List<ShopCartItemVo> queryShopCartItemBySpecId(String specIds);
 }

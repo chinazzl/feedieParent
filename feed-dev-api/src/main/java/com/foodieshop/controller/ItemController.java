@@ -8,6 +8,7 @@ import com.foodieshop.service.ItemService;
 import com.foodieshop.vo.CommentRecord;
 import com.foodieshop.vo.ItemInfoVo;
 import com.foodieshop.vo.ItemLevelCommentVo;
+import com.foodieshop.vo.ShopCartItemVo;
 import com.imooc.utils.IMOOCJSONResult;
 import com.imooc.utils.PagedGridResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +99,7 @@ public class ItemController extends BaseController {
     /**
      * 查询 商品各个等级的评论信息
      *
-     * @param itemName   商品名称
+     * @param itemName 商品名称
      * @param page     当前页
      * @param pageSize 每页显示条数
      * @return
@@ -118,6 +119,23 @@ public class ItemController extends BaseController {
         }
         PagedGridResult commentRecords = itemService.queryItemInfoByItemName(itemName, sort, page, pageSize);
         return IMOOCJSONResult.ok(commentRecords);
+    }
+
+    /**
+     * 根据从cookie 中 取出的规格id，进行实时刷新规格信息
+     * @author zhang zhao lin
+     * @date 2021/3/23 22:59
+     * @param specIds
+     * @return com.imooc.utils.IMOOCJSONResult
+     */
+    @RequestMapping("/refresh")
+    public IMOOCJSONResult refreshShopCart(@RequestParam("itemSpecIds") String specIds) {
+        if (specIds == null) {
+            return IMOOCJSONResult.ok();
+        }
+        List<ShopCartItemVo> shopCartItemVos = itemService.queryShopCartItemBySpecId(specIds);
+
+        return IMOOCJSONResult.ok(shopCartItemVos);
     }
 
 }

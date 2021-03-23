@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.foodieshop.mapper.ItemsSpecMapper" >
-  <resultMap id="BaseResultMap" type="com.foodieshop.pojo.ItemsSpec" >
-    <!--
+ <!-- <resultMap id="BaseResultMap" type="com.foodieshop.pojo.ItemsSpec" >
       WARNING - @mbg.generated
-    -->
     <id column="id" property="id" jdbcType="VARCHAR" />
     <result column="item_id" property="itemId" jdbcType="VARCHAR" />
     <result column="name" property="name" jdbcType="VARCHAR" />
@@ -14,5 +12,26 @@
     <result column="price_normal" property="priceNormal" jdbcType="INTEGER" />
     <result column="created_time" property="createdTime" jdbcType="TIMESTAMP" />
     <result column="updated_time" property="updatedTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+  </resultMap>-->
+
+  <select id="queryShopCartItemBySpecId" parameterType="List" resultType="com.foodieshop.vo.ShopCartItemVo">
+    SELECT
+      item.id AS itemId,
+      item_img.url AS itemImgUrl,
+      item.item_name AS itemName,
+      item_spec.id AS specId,
+      item_spec.`name` AS specName,
+      item_spec.price_discount AS priceDiscount,
+      item_spec.price_normal AS priceNormal
+  FROM
+      items_spec item_spec
+      LEFT JOIN items item ON item_spec.item_id = item.id
+      LEFT JOIN items_img item_img ON item.id = item_img.item_id
+  WHERE
+      item_img.is_main = 1
+      AND item_spec.id IN
+        <foreach collection="paramList" index="i" item="specItem" open="(" close=")" separator=",">
+          #{specItem}
+        </foreach>
+  </select>
 </mapper>
