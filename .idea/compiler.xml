@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="feed-dev-pojo" />
+<!--        <module name="foodie-payment" />-->
         <module name="feed-dev-common" />
         <module name="feed-dev-api" />
         <module name="feed-dev-mapper" />
